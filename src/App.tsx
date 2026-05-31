@@ -17,6 +17,24 @@ type Restaurant = {
   city: string;
 };
 
+const sampleRestaurants: Restaurant[] = [
+  {
+    name: 'Baku Restaurant',
+    description: 'Traditional Azerbaijani dishes, kebabs, and fresh salads in central Baku.',
+    city: 'Baku',
+  },
+  {
+    name: 'Chef Muslim',
+    description: 'Local home-style cuisine with plov, dolma, and a warm family atmosphere.',
+    city: 'Sumgayıt',
+  },
+  {
+    name: 'Sheki Saray',
+    description: 'Regional Sheki flavors, piti, sweets, and tea service inspired by northern Azerbaijan.',
+    city: 'Sheki',
+  },
+];
+
 type AppState = {
   restaurants: Restaurant[];
   formData: Restaurant;
@@ -73,20 +91,37 @@ const App: React.FC = () => {
       return;
     }
 
-    getRestaurantList();
+    initializeRestaurantList();
   }, [isAuthenticated]);
 
-  const getRestaurantList = async () => {
+  const getRestaurantList = async (): Promise<Restaurant[]> => {
     const { data } = await client.models.Restaurant.list({});
+    const restaurants = data.map(({ name, description, city }: Restaurant) => ({
+      name,
+      description,
+      city,
+    }));
 
     dispatch({
       type: 'QUERY',
-      payload: data.map(({ name, description, city }: Restaurant) => ({
-        name,
-        description,
-        city,
-      })),
+      payload: restaurants,
     });
+
+    return restaurants;
+  };
+
+  const initializeRestaurantList = async () => {
+    const restaurants = await getRestaurantList();
+
+    if (restaurants.length) {
+      return;
+    }
+
+    await Promise.all(
+      sampleRestaurants.map((restaurant) => client.models.Restaurant.create(restaurant))
+    );
+
+    await getRestaurantList();
   };
 
   const createNewRestaurant = async (e: React.SyntheticEvent) => {
