@@ -1,33 +1,88 @@
 .App {
+  min-height: 100vh;
+  background: #f4f7fb;
+  color: #172033;
+}
+
+.app-shell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.auth-shell {
+  min-height: 100vh;
+}
+
+.dashboard-shell {
+  align-items: flex-start;
+}
+
+.auth-panel,
+.restaurant-form {
+  width: 100%;
+  padding: 28px;
+  background: #ffffff;
+  border: 1px solid #e3e8f0;
+  border-radius: 8px;
+  box-shadow: 0 14px 34px rgba(23, 32, 51, 0.08);
+}
+
+.app-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
   text-align: center;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 40vmin;
-  pointer-events: none;
+.app-subtitle {
+  margin: 10px 0 24px;
+  color: #5c667a;
+  text-align: center;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.dashboard-header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 24px;
+  padding: 24px 0;
 }
 
-.App-link {
-  color: #61dafb;
+.dashboard-header .app-title,
+.dashboard-header .app-subtitle {
+  text-align: left;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.dashboard-header .app-subtitle {
+  margin-bottom: 0;
+}
+
+.table {
+  background: #ffffff;
+}
+
+@media (max-width: 576px) {
+  .app-shell {
+    padding: 20px 12px;
   }
-  to {
-    transform: rotate(360deg);
+
+  .auth-panel,
+  .restaurant-form {
+    padding: 22px;
+  }
+
+  .dashboard-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .dashboard-header .app-title,
+  .dashboard-header .app-subtitle {
+    text-align: center;
   }
 }

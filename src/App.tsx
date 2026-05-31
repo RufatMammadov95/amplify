@@ -35,6 +35,11 @@ const sampleRestaurants: Restaurant[] = [
   },
 ];
 
+const normalizeRestaurant = (restaurant: Restaurant): Restaurant => ({
+  ...restaurant,
+  city: restaurant.name === 'Chef Muslim' ? 'Sumgait' : restaurant.city,
+});
+
 type AppState = {
   restaurants: Restaurant[];
   formData: Restaurant;
@@ -96,11 +101,13 @@ const App: React.FC = () => {
 
   const getRestaurantList = async (): Promise<Restaurant[]> => {
     const { data } = await client.models.Restaurant.list({});
-    const restaurants = data.map(({ name, description, city }: Restaurant) => ({
-      name,
-      description,
-      city,
-    }));
+    const restaurants = data.map(({ name, description, city }: Restaurant) =>
+      normalizeRestaurant({
+        name,
+        description,
+        city,
+      })
+    );
 
     dispatch({
       type: 'QUERY',
@@ -118,7 +125,9 @@ const App: React.FC = () => {
     }
 
     await Promise.all(
-      sampleRestaurants.map((restaurant) => client.models.Restaurant.create(restaurant))
+      sampleRestaurants.map((restaurant) =>
+        client.models.Restaurant.create(normalizeRestaurant(restaurant))
+      )
     );
 
     await getRestaurantList();
@@ -183,62 +192,75 @@ const App: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="App">
+      <div className="App app-shell auth-shell">
         <Container>
-          <Row className="mt-3">
-            <Col md={4}>
-              <Form onSubmit={handleAuth}>
-                <Form.Group controlId="authEmail">
-                  <Form.Control
-                    onChange={(e: any) => setEmail(e.target.value)}
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={email}
-                  />
-                </Form.Group>
-                {!needsConfirmation ? (
-                  <Form.Group controlId="authPassword">
+          <Row className="justify-content-center">
+            <Col md={6} lg={4}>
+              <div className="auth-panel">
+                <h1 className="app-title">Restaurant Finder</h1>
+                <p className="app-subtitle">
+                  {needsConfirmation
+                    ? 'Enter the confirmation code from your email.'
+                    : isSignUp
+                    ? 'Create an account to manage your restaurants.'
+                    : 'Sign in to view and add restaurants.'}
+                </p>
+                <Form onSubmit={handleAuth}>
+                  <Form.Group controlId="authEmail">
                     <Form.Control
-                      onChange={(e: any) =>
-                        setPassword(e.target.value)
-                      }
-                      type="password"
-                      name="password"
-                      placeholder="Password"
-                      value={password}
+                      className="mb-3"
+                      onChange={(e: any) => setEmail(e.target.value)}
+                      type="email"
+                      name="email"
+                      placeholder="Email"
+                      value={email}
                     />
                   </Form.Group>
-                ) : (
-                  <Form.Group controlId="authConfirmationCode">
-                    <Form.Control
-                      onChange={(e: any) =>
-                        setConfirmationCode(e.target.value)
-                      }
-                      type="text"
-                      name="confirmationCode"
-                      placeholder="Confirmation code"
-                      value={confirmationCode}
-                    />
-                  </Form.Group>
-                )}
-                {authError ? <p className="text-danger">{authError}</p> : null}
-                <Button type="submit" className="float-left">
-                  {needsConfirmation ? 'Confirm Account' : isSignUp ? 'Sign Up' : 'Sign In'}
-                </Button>
-                {!needsConfirmation ? (
-                  <Button
-                    type="button"
-                    variant="link"
-                    onClick={() => {
-                      setIsSignUp(!isSignUp);
-                      setAuthError('');
-                    }}
-                  >
-                    {isSignUp ? 'Use existing account' : 'Create account'}
+                  {!needsConfirmation ? (
+                    <Form.Group controlId="authPassword">
+                      <Form.Control
+                        className="mb-3"
+                        onChange={(e: any) =>
+                          setPassword(e.target.value)
+                        }
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                        value={password}
+                      />
+                    </Form.Group>
+                  ) : (
+                    <Form.Group controlId="authConfirmationCode">
+                      <Form.Control
+                        className="mb-3"
+                        onChange={(e: any) =>
+                          setConfirmationCode(e.target.value)
+                        }
+                        type="text"
+                        name="confirmationCode"
+                        placeholder="Confirmation code"
+                        value={confirmationCode}
+                      />
+                    </Form.Group>
+                  )}
+                  {authError ? <p className="text-danger">{authError}</p> : null}
+                  <Button type="submit" className="w-100">
+                    {needsConfirmation ? 'Confirm Account' : isSignUp ? 'Sign Up' : 'Sign In'}
                   </Button>
-                ) : null}
-              </Form>
+                  {!needsConfirmation ? (
+                    <Button
+                      type="button"
+                      variant="link"
+                      onClick={() => {
+                        setIsSignUp(!isSignUp);
+                        setAuthError('');
+                      }}
+                    >
+                      {isSignUp ? 'Use existing account' : 'Create account'}
+                    </Button>
+                  ) : null}
+                </Form>
+              </div>
             </Col>
           </Row>
         </Container>
@@ -247,16 +269,37 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="App">
+    <div className="App app-shell dashboard-shell">
       <Container>
-        <Row className="mt-3">
-          <Col md={4}>
-            <Form onSubmit={createNewRestaurant}>
+        <Row className="justify-content-center">
+          <Col lg={10}>
+            <div className="dashboard-header">
+              <div>
+                <h1 className="app-title">Restaurant Finder</h1>
+                <p className="app-subtitle">Browse restaurants and add your favorite places.</p>
+              </div>
+              <Button type="button" variant="outline-secondary" onClick={handleSignOut}>
+                Sign Out
+              </Button>
+            </div>
+          </Col>
+        </Row>
+
+        <Row className="justify-content-center">
+          <Col md={8} lg={6}>
+            <Form className="restaurant-form" onSubmit={createNewRestaurant}>
               <Form.Group controlId="formDataName">
-                <Form.Control onChange={handleChange} type="text" name="name" placeholder="Name" />
+                <Form.Control
+                  className="mb-3"
+                  onChange={handleChange}
+                  type="text"
+                  name="name"
+                  placeholder="Name"
+                />
               </Form.Group>
               <Form.Group controlId="formDataDescription">
                 <Form.Control
+                  className="mb-3"
                   onChange={handleChange}
                   type="text"
                   name="description"
@@ -264,21 +307,24 @@ const App: React.FC = () => {
                 />
               </Form.Group>
               <Form.Group controlId="formDataCity">
-                <Form.Control onChange={handleChange} type="text" name="city" placeholder="City" />
+                <Form.Control
+                  className="mb-3"
+                  onChange={handleChange}
+                  type="text"
+                  name="city"
+                  placeholder="City"
+                />
               </Form.Group>
-              <Button type="submit" className="float-left">
+              <Button type="submit" className="w-100">
                 Add New Restaurant
-              </Button>
-              <Button type="button" variant="link" onClick={handleSignOut}>
-                Sign Out
               </Button>
             </Form>
           </Col>
         </Row>
 
         {state.restaurants.length ? (
-          <Row className="my-3">
-            <Col>
+          <Row className="justify-content-center my-4">
+            <Col lg={10}>
               <Table striped bordered hover>
                 <thead>
                   <tr>
